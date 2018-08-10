@@ -17,215 +17,259 @@
     <!-- 为ECharts准备一个具备大小（宽高）的Dom -->
     <div id="main" style="width: 1000px;height:800px;"></div>
     <script type="text/javascript">
-        var myChart = echarts.init(document.getElementById('main'), "vintage");
-        myChart.setOption({
-            series: [{
-                type: 'map',
-                map: '云南'
-            }]
-        });
-        var geoCoordMap = {
-            "云南省监狱管理局": [102.706265, 25.050368],
-            "云南省五华监狱": [102.699973, 25.080017],
-            "云南省第二监狱": [102.701631, 25.086633],
-            "云南省第一女子监狱": [103.829057, 25.576742],
-            "云南省第四监狱": [103.801705, 25.633941],
-            "保山监狱": [99.172688, 25.147185],
-            "丽江监狱": [100.220459, 26.895403],
-            "文山监狱": [104.241886, 23.385688],
-            "普洱监狱": [100.990964, 22.78647]
-        };
+        (function () {
+            function renderMap(dom, address, headoffice, geoCoordMap, onlineoffice) {
+                var myChart = echarts.init(dom);
+                myChart.setOption({
+                    series: [{
+                        type: 'map',
+                        map: address
+                    }]
+                });
 
-        var BJData = [
-            [{
-                name: '云南省监狱管理局'
-            }, {
-                name: '云南省五华监狱',
-                value: "通讯正常"
-            }],
-            [{
-                name: '云南省监狱管理局'
-            }, {
-                name: '云南省第二监狱',
-                value: "通讯正常"
-            }],
-            [{
-                name: '云南省监狱管理局'
-            }, {
-                name: '云南省第一女子监狱',
-                value: "通讯正常"
-            }],
-            [{
-                name: '云南省监狱管理局'
-            }, {
-                name: '云南省第四监狱',
-                value: "通讯正常"
-            }],
-            [{
-                name: '云南省监狱管理局'
-            }, {
-                name: '保山监狱',
-                value: "通讯正常"
-            }],
-            [{
-                name: '云南省监狱管理局'
-            }, {
-                name: '丽江监狱',
-                value: "通讯正常"
-            }]
-        ];
+                var planePath =
+                    'path://M1705.06,1318.313v-89.254l-319.9-221.799l0.073-208.063c0.521-84.662-26.629-121.796-63.961-121.491c-37.332-0.305-64.482,36.829-63.961,121.491l0.073,208.063l-319.9,221.799v89.254l330.343-157.288l12.238,241.308l-134.449,92.931l0.531,42.034l175.125-42.917l175.125,42.917l0.531-42.034l-134.449-92.931l12.238-241.308L1705.06,1318.313z';
 
-        var planePath =
-            'path://M1705.06,1318.313v-89.254l-319.9-221.799l0.073-208.063c0.521-84.662-26.629-121.796-63.961-121.491c-37.332-0.305-64.482,36.829-63.961,121.491l0.073,208.063l-319.9,221.799v89.254l330.343-157.288l12.238,241.308l-134.449,92.931l0.531,42.034l175.125-42.917l175.125,42.917l0.531-42.034l-134.449-92.931l12.238-241.308L1705.06,1318.313z';
+                var convertData = function (data) {
+                    var res = [];
+                    for (var i = 0; i < data.length; i++) {
+                        var dataItem = data[i];
+                        var fromCoord = geoCoordMap[dataItem[0].name];
+                        var toCoord = geoCoordMap[dataItem[1].name];
+                        if (fromCoord && toCoord) {
+                            res.push({
+                                fromName: dataItem[0].name,
+                                toName: dataItem[1].name,
+                                coords: [fromCoord, toCoord],
+                                value: dataItem[1].value
+                            });
+                        }
+                    }
+                    return res;
+                };
 
-        var convertData = function (data) {
-            var res = [];
-            for (var i = 0; i < data.length; i++) {
-                var dataItem = data[i];
-                var fromCoord = geoCoordMap[dataItem[0].name];
-                var toCoord = geoCoordMap[dataItem[1].name];
-                if (fromCoord && toCoord) {
-                    res.push({
-                        fromName: dataItem[0].name,
-                        toName: dataItem[1].name,
-                        coords: [fromCoord, toCoord],
-                        value: dataItem[1].value
+                var linecolor = '#ffa022';
+                var series = [];
+                [
+                    [headoffice, onlineoffice],
+                ].forEach(function (item, i) {
+                    series.push({
+                        name: headoffice,
+                        type: 'lines',
+                        zlevel: 1,
+                        effect: {
+                            show: true,
+                            period: 6,
+                            trailLength: 0.7,
+                            color: '#fff',
+                            symbolSize: 3
+                        },
+                        lineStyle: {
+                            normal: {
+                                color: linecolor,
+                                width: 0,
+                                curveness: 0.2
+                            }
+                        },
+                        data: convertData(item[1])
+                    }, {
+                        name: headoffice,
+                        type: 'lines',
+                        zlevel: 2,
+                        symbol: ['none', 'arrow'],
+                        symbolSize: 10,
+                        effect: {
+                            show: true,
+                            period: 6,
+                            trailLength: 0,
+                            symbol: planePath,
+                            symbolSize: 15
+                        },
+                        lineStyle: {
+                            normal: {
+                                color: linecolor,
+                                width: 1,
+                                opacity: 0.6,
+                                curveness: 0.2
+                            }
+                        },
+                        data: convertData(item[1])
+                    }, {
+                        name: headoffice,
+                        type: 'effectScatter',
+                        coordinateSystem: 'geo',
+                        zlevel: 2,
+                        rippleEffect: {
+                            brushType: 'stroke'
+                        },
+                        label: {
+                            normal: {
+                                show: true,
+                                position: 'right',
+                                formatter: '{b}'
+                            }
+                        },
+                        symbolSize: function (val) {
+                            return 95 / 8;
+                        },
+                        itemStyle: {
+                            normal: {
+                                color: linecolor
+                            }
+                        },
+                        data: item[1].map(function (dataItem) {
+                            return {
+                                name: dataItem[1].name,
+                                value: geoCoordMap[dataItem[1].name].concat([dataItem[1].value])
+                            };
+                        })
+                    }, {
+                        name: headoffice,
+                        type: 'effectScatter',
+                        coordinateSystem: 'geo',
+                        zlevel: 2,
+                        rippleEffect: {
+                            brushType: 'stroke'
+                        },
+                        label: {
+                            normal: {
+                                show: true,
+                                position: 'right',
+                                formatter: '{b}'
+                            }
+                        },
+                        symbolSize: function (val) {
+                            return 95 / 8;
+                        },
+                        itemStyle: {
+                            normal: {
+                                color: "red"
+                            }
+                        },
+                        data: item[1].map(function (dataItem) {
+                            return {
+                                name: dataItem[1].name,
+                                value: geoCoordMap[dataItem[1].name].concat([dataItem[1].value])
+                            };
+                        })
                     });
-                }
-            }
-            return res;
-        };
+                });
 
-        // var color = ['#a6c84c', '#ffa022', '#46bee9'];
-
-        var color = ['#ffa022'];
-        var series = [];
-        [
-            ['云南省监狱管理局', BJData],
-        ].forEach(function (item, i) {
-            series.push({
-                name: item[0],
-                type: 'lines',
-                zlevel: 1,
-                effect: {
-                    show: true,
-                    period: 6,
-                    trailLength: 0.7,
-                    color: '#fff',
-                    symbolSize: 3
-                },
-                lineStyle: {
-                    normal: {
-                        color: color[i],
-                        width: 0,
-                        curveness: 0.2
-                    }
-                },
-                data: convertData(item[1])
-            }, {
-                name: item[0],
-                type: 'lines',
-                zlevel: 2,
-                symbol: ['none', 'arrow'],
-                symbolSize: 10,
-                effect: {
-                    show: true,
-                    period: 6,
-                    trailLength: 0,
-                    symbol: planePath,
-                    symbolSize: 15
-                },
-                lineStyle: {
-                    normal: {
-                        color: color[i],
-                        width: 1,
-                        opacity: 0.6,
-                        curveness: 0.2
-                    }
-                },
-                data: convertData(item[1])
-            }, {
-                name: item[0],
-                type: 'effectScatter',
-                coordinateSystem: 'geo',
-                zlevel: 2,
-                rippleEffect: {
-                    brushType: 'stroke'
-                },
-                label: {
-                    normal: {
-                        show: true,
-                        position: 'right',
-                        formatter: '{b}'
-                    }
-                },
-                symbolSize: function (val) {
-                    return 95 / 8;
-                },
-                itemStyle: {
-                    normal: {
-                        color: color[i]
-                    }
-                },
-                data: item[1].map(function (dataItem) {
-                    return {
-                        name: dataItem[1].name,
-                        value: geoCoordMap[dataItem[1].name].concat([dataItem[1].value])
-                    };
-                })
-            });
-        });
-
-        option = {
-            backgroundColor: '#eee',
-            roam: true,
-            center: geoCoordMap["云南省监狱管理局"],
-            title: {
-                text: '云南省监狱分布图',
-                left: 20,
-                top: 20,
-                textStyle: {
-                    color: '#808080',
-                    fontFamily: "Microsoft YaHei",
-                    fontSize: 25,
-                    align: "left"
+                series[series.length - 1].data.splice(0, series[series.length - 1].data.length);
+                for (var key in offlineoffice) {
+                    var temp = {};
+                    temp.name = key;
+                    temp.value = offlineoffice[key];
+                    temp.value.push("网络异常");
+                    series[series.length - 1].data.push(temp);
                 }
-            },
-            tooltip: {
-                trigger: 'item',
-                formatter: function (params, ticket, callback) {
-                    if (params.seriesType == "effectScatter") {
-                        return "线路：" + params.data.name + "" + params.data.value[2];
-                    } else if (params.seriesType == "lines") {
-                        return params.data.fromName + "--->" + params.data.toName + "<br />" + params.data.value;
-                    } else {
-                        return params.name;
-                    }
-                }
-            },
-            geo: {
-                map: '云南',
-                label: {
-                    emphasis: {
-                        show: true,
-                        color: '#fff'
-                    }
-                },
-                roam: true,
-                itemStyle: {
-                    normal: {
-                        areaColor: '#323c48',
-                        borderColor: '#404a59'
+                option = {
+                    backgroundColor: '#eee',
+                    roam: true,
+                    center: geoCoordMap["云南省监狱管理局"],
+                    title: {
+                        text: '云南省监狱分布图',
+                        left: 20,
+                        top: 20,
+                        textStyle: {
+                            color: '#808080',
+                            fontFamily: "Microsoft YaHei",
+                            fontSize: 25,
+                            align: "left"
+                        }
                     },
-                    emphasis: {
-                        areaColor: '#2a333d'
-                    }
-                }
-            },
-            series: series
-        };
+                    tooltip: {
+                        trigger: 'item',
+                        formatter: function (params, ticket, callback) {
+                            if (params.seriesType == "effectScatter") {
+                                return "线路：" + params.data.name + "" + params.data.value[2];
+                            } else if (params.seriesType == "lines") {
+                                return params.data.fromName + "--->" + params.data.toName + "<br />" +
+                                    params.data.value;
+                            } else {
+                                return params.name;
+                            }
+                        }
+                    },
+                    geo: {
+                        map: '云南',
+                        label: {
+                            emphasis: {
+                                show: true,
+                                color: '#fff'
+                            }
+                        },
+                        roam: true,
+                        itemStyle: {
+                            normal: {
+                                areaColor: '#323c48',
+                                borderColor: '#404a59'
+                            },
+                            emphasis: {
+                                areaColor: '#2a333d'
+                            }
+                        }
+                    },
+                    series: series
+                };
 
-        myChart.setOption(option);
+                myChart.setOption(option);
+            }
+
+            var onlineoffice = [
+                [{
+                    name: '云南省监狱管理局'
+                }, {
+                    name: '云南省五华监狱',
+                    value: "通讯正常"
+                }],
+                [{
+                    name: '云南省监狱管理局'
+                }, {
+                    name: '云南省第二监狱',
+                    value: "通讯正常"
+                }],
+                [{
+                    name: '云南省监狱管理局'
+                }, {
+                    name: '云南省第一女子监狱',
+                    value: "通讯正常"
+                }],
+                [{
+                    name: '云南省监狱管理局'
+                }, {
+                    name: '云南省第四监狱',
+                    value: "通讯正常"
+                }],
+                [{
+                    name: '云南省监狱管理局'
+                }, {
+                    name: '保山监狱',
+                    value: "通讯正常"
+                }],
+                [{
+                    name: '云南省监狱管理局'
+                }, {
+                    name: '丽江监狱',
+                    value: "通讯正常"
+                }]
+            ];
+            var headoffice = "云南省监狱管理局";
+            var geoCoordMap = {
+                "云南省监狱管理局": [102.706265, 25.050368],
+                "云南省五华监狱": [102.699973, 25.080017],
+                "云南省第二监狱": [102.701631, 25.086633],
+                "云南省第一女子监狱": [103.829057, 25.576742],
+                "云南省第四监狱": [103.801705, 25.633941],
+                "保山监狱": [99.172688, 25.147185],
+                "丽江监狱": [100.220459, 26.895403]
+            };
+            var offlineoffice = {
+                "文山监狱": [104.241886, 23.385688],
+                "普洱监狱": [100.990964, 22.78647]
+            };
+            renderMap(document.getElementById("main"), "云南", headoffice, geoCoordMap, onlineoffice);
+        })()
     </script>
 </body>
 
