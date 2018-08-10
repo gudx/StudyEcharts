@@ -15,7 +15,7 @@
 
 <body>
     <!-- 为ECharts准备一个具备大小（宽高）的Dom -->
-    <div id="main" style="width: 600px;height:400px;"></div>
+    <div id="main" style="width: 1000px;height:800px;"></div>
     <script type="text/javascript">
         var myChart = echarts.init(document.getElementById('main'), "vintage");
         myChart.setOption({
@@ -25,56 +25,52 @@
             }]
         });
         var geoCoordMap = {
-            "云南省监狱管理局": [102.706265,25.050368],
-            "云南省五华监狱" : [102.699973,25.080017] ,
-            "云南省第二监狱":[102.701631,25.086633],
-            "云南省第一女子监狱":[103.829057,25.576742],
-            "云南省第四监狱": [103.801705,25.633941],
-            "保山监狱":[99.172688,25.147185],
-            "丽江监狱": [100.220459,26.895403]           
+            "云南省监狱管理局": [102.706265, 25.050368],
+            "云南省五华监狱": [102.699973, 25.080017],
+            "云南省第二监狱": [102.701631, 25.086633],
+            "云南省第一女子监狱": [103.829057, 25.576742],
+            "云南省第四监狱": [103.801705, 25.633941],
+            "保山监狱": [99.172688, 25.147185],
+            "丽江监狱": [100.220459, 26.895403],
+            "文山监狱": [104.241886, 23.385688],
+            "普洱监狱": [100.990964, 22.78647]
         };
 
         var BJData = [
             [{
                 name: '云南省监狱管理局'
             }, {
-                name: '云南省五华监狱'
-                ,
+                name: '云南省五华监狱',
                 value: "通讯正常"
             }],
             [{
                 name: '云南省监狱管理局'
             }, {
-                name: '云南省第二监狱'
-                ,
+                name: '云南省第二监狱',
                 value: "通讯正常"
             }],
             [{
                 name: '云南省监狱管理局'
             }, {
-                name: '云南省第一女子监狱'
-                ,
+                name: '云南省第一女子监狱',
                 value: "通讯正常"
             }],
             [{
                 name: '云南省监狱管理局'
             }, {
-                name: '云南省第四监狱'
-                ,
+                name: '云南省第四监狱',
                 value: "通讯正常"
             }],
             [{
                 name: '云南省监狱管理局'
             }, {
-                name: '保山监狱'
-                ,
+                name: '保山监狱',
                 value: "通讯正常"
             }],
             [{
                 name: '云南省监狱管理局'
             }, {
-                name: '丽江监狱'
-                ,
+                name: '丽江监狱',
                 value: "通讯正常"
             }]
         ];
@@ -101,7 +97,7 @@
         };
 
         // var color = ['#a6c84c', '#ffa022', '#46bee9'];
-        
+
         var color = ['#ffa022'];
         var series = [];
         [
@@ -127,7 +123,7 @@
                 },
                 data: convertData(item[1])
             }, {
-                name: item[0] + ' Top10',
+                name: item[0],
                 type: 'lines',
                 zlevel: 2,
                 symbol: ['none', 'arrow'],
@@ -149,7 +145,7 @@
                 },
                 data: convertData(item[1])
             }, {
-                name: item[0] + ' Top10',
+                name: item[0],
                 type: 'effectScatter',
                 coordinateSystem: 'geo',
                 zlevel: 2,
@@ -164,7 +160,7 @@
                     }
                 },
                 symbolSize: function (val) {
-                    return val[2] / 8;
+                    return 95 / 8;
                 },
                 itemStyle: {
                     normal: {
@@ -181,37 +177,31 @@
         });
 
         option = {
-            backgroundColor: '#3388cc',
+            backgroundColor: '#eee',
+            roam: true,
+            center: geoCoordMap["云南省监狱管理局"],
             title: {
-                text: '模拟迁徙',
-                subtext: '数据纯属虚构',
-                left: 'center',
+                text: '云南省监狱分布图',
+                left: 20,
+                top: 20,
                 textStyle: {
-                    color: '#fff'
+                    color: '#808080',
+                    fontFamily: "Microsoft YaHei",
+                    fontSize: 25,
+                    align: "left"
                 }
             },
             tooltip: {
                 trigger: 'item',
                 formatter: function (params, ticket, callback) {
-                    console.log(params);
                     if (params.seriesType == "effectScatter") {
                         return "线路：" + params.data.name + "" + params.data.value[2];
                     } else if (params.seriesType == "lines") {
-                        return params.data.fromName + ">" + params.data.toName + "<br />" + params.data.value;
+                        return params.data.fromName + "--->" + params.data.toName + "<br />" + params.data.value;
                     } else {
                         return params.name;
                     }
                 }
-            },
-            legend: {
-                orient: 'vertical',
-                top: 'bottom',
-                left: 'right',
-                data: ['北京 Top10'],
-                textStyle: {
-                    color: '#fff'
-                },
-                selectedMode: 'multiple',
             },
             geo: {
                 map: '云南',
