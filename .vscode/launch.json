@@ -8,7 +8,7 @@
             "type": "chrome",
             "request": "launch",
             "name": "Launch Chrome against localhost",
-            "url": "${workspaceFolder}/7.柱状图/index.html",
+            "url": "${workspaceFolder}/9.关系图/index2.html",
             "webRoot": "${workspaceFolder}"
         }
     ]
